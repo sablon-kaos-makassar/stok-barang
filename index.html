@@ -69,7 +69,7 @@
     width: 16px; height: 16px; stroke: var(--ink3); stroke-width: 2; fill: none; pointer-events: none;
   }
   .search-wrap input {
-    width: 100%; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 500;
+    width: 100%; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 16px; font-weight: 500;
     padding: 9px 12px 9px 36px; border: 1.5px solid var(--border); border-radius: 10px;
     background: #F9F9F9; color: var(--ink); transition: border-color .2s;
   }
@@ -91,14 +91,12 @@
     text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px;
   }
 
-  /* ALERT BANNER - single section all restock items */
+  /* ALERT BANNER */
   .alert-banner {
     background: #FFF4F2; border: 1.5px solid #FDDDD7; border-radius: var(--radius);
     padding: 14px 16px; margin-bottom: 24px; animation: fadeUp .35s both;
   }
-  .alert-top {
-    display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
-  }
+  .alert-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
   .alert-icon { font-size: 18px; flex-shrink: 0; }
   .alert-title { font-size: 13px; font-weight: 700; color: #B03A20; flex: 1; }
   .alert-count {
@@ -137,8 +135,8 @@
   .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
   .panel-title { font-size: 14px; font-weight: 700; color: var(--ink); display: flex; align-items: center; gap: 7px; }
   .panel-badge { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 20px; flex-shrink: 0; }
-  .badge-ok     { background: var(--orange-lt); color: var(--orange); }
-  .badge-warn   { background: #FFF4F2; color: #B03A20; }
+  .badge-ok   { background: var(--orange-lt); color: var(--orange); }
+  .badge-warn { background: #FFF4F2; color: #B03A20; }
 
   /* STOCK ROWS */
   .stock-item {
@@ -152,9 +150,6 @@
   .stock-code { font-family: 'DM Mono',monospace; font-size: 10px; color: var(--ink3); }
   .stock-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
   .stock-num { font-family: 'DM Mono',monospace; font-size: 16px; font-weight: 500; color: var(--ink); min-width: 28px; text-align: right; }
-  .stock-status { font-size: 9px; font-weight: 700; padding: 3px 7px; border-radius: 20px; text-transform: uppercase; letter-spacing: .5px; }
-  .s-aman    { background: #EDFAF3; color: #1A7A50; }
-  .s-restock { background: #FFF4F2; color: #B03A20; }
 
   /* SLIDE MENU */
   .menu-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 100; }
@@ -255,7 +250,6 @@
 
 <div class="main">
 
-  <!-- ALERT: semua produk restock dalam 1 section -->
   <div class="alert-banner" id="alert-banner" style="display:none">
     <div class="alert-top">
       <span class="alert-icon">🔴</span>
@@ -265,9 +259,8 @@
     <div class="alert-chips" id="alert-chips"></div>
   </div>
 
-  <!-- KPI -->
-  <div class="sec-title">Ringkasan Inventori</div>
-  <div class="kpi-grid">
+  <div class="sec-title" id="title-ringkasan">Ringkasan Inventori</div>
+  <div class="kpi-grid" id="kpi-grid">
     <div class="kpi-card c-orange">
       <span class="kpi-emoji">📦</span>
       <div class="kpi-label">Total Jenis Produk</div>
@@ -306,8 +299,7 @@
     </div>
   </div>
 
-  <!-- STOCK LIST PER KATEGORI -->
-  <div class="sec-title">Daftar Stok per Kategori</div>
+  <div class="sec-title" id="title-daftar">Daftar Stok per Kategori</div>
   <div class="panels-grid" id="panels-grid"></div>
 
 </div>
@@ -344,13 +336,12 @@
 </div>
 
 <script>
-  // ── NAVIGASI ──
   function goTo(id) {
     const links = {
-      presensi: 'https://sablon-kaos-makassar.github.io/presensi-karyawan',
-      penjahit: 'https://sablon-kaos-makassar.github.io/laporan-penjahit',
-      keuangan: 'https://sablon-kaos-makassar.github.io/laporan-keuangan',
-      orderan: 'https://sablon-kaos-makassar.github.io/orderan',
+      presensi:    'https://sablon-kaos-makassar.github.io/presensi-karyawan',
+      penjahit:    'https://sablon-kaos-makassar.github.io/laporan-penjahit',
+      keuangan:    'https://sablon-kaos-makassar.github.io/laporan-keuangan',
+      orderan:     'https://sablon-kaos-makassar.github.io/orderan',
       'alat-bahan':'https://sablon-kaos-makassar.github.io/alat-bahan',
     };
     if (links[id]) window.location.href = links[id];
@@ -373,52 +364,69 @@
   }
   window.addEventListener('resize', fixOffset);
 
-  // ── DATA STATIS (ganti dengan fetch Apps Script saat backend siap) ──
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyTcW__jLcDvE6ww3ZsLwbrgniKl-OXIqx-r5di3DemlTr63jdFP8RWmZWhAVYSpgN4/exec';
+
   const DATA = {
     categories: [
       {
         key: 'totebag-premium', label: 'Totebag Premium', emoji: '👜', dot: '#E8603C', group: 'totebag',
         items: [
-          { code:'P001', name:'Premium - Putih Gading',            min:10, stock:29  },
-          { code:'P002', name:'Premium - Putih Gading - Resleting',min:10, stock:170 },
-          { code:'P003', name:'Premium - Hitam',                   min:10, stock:62  },
-          { code:'P004', name:'Premium - Hitam - Resleting',       min:10, stock:0   },
-          { code:'B001', name:'Blacu',                             min:10, stock:62  },
+          { code:'P001', name:'Premium - Putih Gading',             min:10, stock:29  },
+          { code:'P002', name:'Premium - Putih Gading - Resleting', min:10, stock:170 },
+          { code:'P003', name:'Premium - Hitam',                    min:10, stock:62  },
+          { code:'P004', name:'Premium - Hitam - Resleting',        min:10, stock:0   },
+          { code:'B001', name:'Blacu',                              min:10, stock:62  },
         ]
       },
       {
         key: 'totebag-eco', label: 'Totebag Eco', emoji: '🌿', dot: '#27AE60', group: 'totebag',
         items: [
-          { code:'E001', name:'Eco - Putih Gading',              min:12, stock:102 },
-          { code:'E002', name:'Eco - Putih Gading - Resleting',  min:5,  stock:60  },
-          { code:'E003', name:'Eco - Hitam',                     min:5,  stock:-1  },
-          { code:'E004', name:'Eco - Hitam - Resleting',         min:5,  stock:35  },
+          { code:'E001', name:'Eco - Putih Gading',             min:12, stock:102 },
+          { code:'E002', name:'Eco - Putih Gading - Resleting', min:5,  stock:60  },
+          { code:'E003', name:'Eco - Hitam',                    min:5,  stock:-1  },
+          { code:'E004', name:'Eco - Hitam - Resleting',        min:5,  stock:35  },
         ]
       },
       {
-        key: 'celemek', label: 'Celemek (Apron)', emoji: '👘', dot: '#5B8DEF', group: 'celemek',
+        key: 'celemek', label: 'Apron', emoji: '👘', dot: '#5B8DEF', group: 'celemek',
         items: [
-          { code:'C001', name:'Apron - Hitam',     min:20, stock:12 },
-          { code:'C002', name:'Apron - Merah',     min:10, stock:0  },
-          { code:'C003', name:'Apron - Coklat Tua',min:10, stock:7  },
-          { code:'C004', name:'Apron - Maroon',    min:10, stock:15 },
-          { code:'C005', name:'Apron - Navy',      min:10, stock:0  },
-          { code:'C006', name:'Apron - Kuning',    min:10, stock:13 },
-          { code:'C007', name:'Apron - Biru',      min:10, stock:3  },
-          { code:'C008', name:'Apron - Orange',    min:10, stock:5  },
-          { code:'C009', name:'Apron - Hijau',     min:10, stock:28 },
-          { code:'C010', name:'Apron - Hijau Tua', min:10, stock:19 },
-          { code:'C011', name:'Apron - Pink',      min:10, stock:8  },
-          { code:'C012', name:'Apron - Krem',      min:10, stock:21 },
-          { code:'C013', name:'Apron - Soft Pink', min:10, stock:12 },
-          { code:'C014', name:'Apron - Putih',     min:10, stock:30 },
+          { code:'C001', name:'Apron - Hitam',      min:20, stock:12 },
+          { code:'C002', name:'Apron - Merah',      min:10, stock:0  },
+          { code:'C003', name:'Apron - Coklat Tua', min:10, stock:7  },
+          { code:'C004', name:'Apron - Maroon',     min:10, stock:15 },
+          { code:'C005', name:'Apron - Navy',       min:10, stock:0  },
+          { code:'C006', name:'Apron - Kuning',     min:10, stock:13 },
+          { code:'C007', name:'Apron - Biru',       min:10, stock:3  },
+          { code:'C008', name:'Apron - Orange',     min:10, stock:5  },
+          { code:'C009', name:'Apron - Hijau',      min:10, stock:28 },
+          { code:'C010', name:'Apron - Hijau Tua',  min:10, stock:19 },
+          { code:'C011', name:'Apron - Pink',       min:10, stock:8  },
+          { code:'C012', name:'Apron - Krem',       min:10, stock:21 },
+          { code:'C013', name:'Apron - Soft Pink',  min:10, stock:12 },
+          { code:'C014', name:'Apron - Putih',      min:10, stock:30 },
         ]
       },
       {
-        key: 'celemek-anak', label: 'Apron Anak', emoji: '🧒', dot: '#F5A623', group: 'celemek-anak',
+        key: 'celemek-anak', label: 'Apron Anak', emoji: '🧒', dot: '#F5A623', group: 'celemek',
         items: [
-          // Data apron anak akan diisi dari Apps Script
-          // Tambahkan manual sesuai sheet jika perlu fallback
+          { code:'CA001', name:'Apron Anak - Hitam',  min:5, stock:0  },
+          { code:'CA002', name:'Apron Anak - Merah',  min:5, stock:12 },
+          { code:'CA003', name:'Apron Anak - Hijau',  min:5, stock:0  },
+          { code:'CA004', name:'Apron Anak - Orange', min:5, stock:2  },
+          { code:'CA005', name:'Apron Anak - Kuning', min:5, stock:4  },
+          { code:'CA006', name:'Apron Anak - Maroon', min:5, stock:11 },
+        ]
+      },
+      {
+        key: 'topi-premium', label: 'Topi Premium', emoji: '👑', dot: '#E8A020', group: 'topi',
+        items: [
+          { code:'PR001', name:'Topi Premium - Hitam',  min:5, stock:36 },
+          { code:'PR002', name:'Topi Premium - Merah',  min:5, stock:25 },
+          { code:'PR003', name:'Topi Premium - Benhur', min:5, stock:1  },
+          { code:'PR004', name:'Topi Premium - Hijau',  min:5, stock:5  },
+          { code:'PR005', name:'Topi Premium - Maroon', min:5, stock:6  },
+          { code:'PR006', name:'Topi Premium - Cream',  min:5, stock:6  },
+          { code:'PR007', name:'Topi Premium - Kuning', min:5, stock:5  },
         ]
       },
       {
@@ -459,7 +467,6 @@
     ]
   };
 
-  // ── STATE ──
   let activeFilter = 'semua';
   let restockCount = 0;
 
@@ -476,12 +483,9 @@
     const q = normalize(document.getElementById('search-input').value);
     const isSearching = q.length > 0;
 
-    // Sembunyikan/tampilkan section atas saat mengetik
-    document.getElementById('alert-banner').style.display = isSearching ? 'none' : (restockCount > 0 ? '' : 'none');
-    document.querySelector('.kpi-grid').style.display = isSearching ? 'none' : '';
-    document.querySelectorAll('.sec-title').forEach((el, i) => {
-      if (i === 0) el.style.display = isSearching ? 'none' : ''; // "Ringkasan Inventori"
-    });
+    document.getElementById('alert-banner').style.display  = isSearching ? 'none' : (restockCount > 0 ? '' : 'none');
+    document.getElementById('kpi-grid').style.display      = isSearching ? 'none' : '';
+    document.getElementById('title-ringkasan').style.display = isSearching ? 'none' : '';
 
     document.querySelectorAll('.stock-item').forEach(el => {
       const matchSearch = !q || normalize(el.dataset.name).includes(q);
@@ -509,12 +513,11 @@
         totalStok += s;
         if (item.stock < item.min) restockItems.push({ ...item, dot: cat.dot });
         if (cat.group === 'totebag') { stokTotebag += s; jenisTotebag++; }
-        if (cat.group === 'celemek' || cat.group === 'celemek-anak') { stokCelemek += s; jenisCelemek++; }
+        if (cat.group === 'celemek') { stokCelemek += s; jenisCelemek++; }
         if (cat.group === 'topi')    { stokTopi += s;    jenisTopi++;    }
       });
     });
 
-    // KPIs
     document.getElementById('kpi-jenis').textContent   = fmt(totalJenis);
     document.getElementById('kpi-total').textContent   = fmt(totalStok);
     document.getElementById('kpi-totebag').textContent = fmt(stokTotebag);
@@ -526,51 +529,47 @@
     document.getElementById('sub-celemek').textContent = jenisCelemek + ' jenis';
     document.getElementById('sub-topi').textContent    = jenisTopi + ' jenis';
 
-    // Alert banner — semua produk restock dalam 1 section
     if (restockItems.length > 0) {
       document.getElementById('alert-banner').style.display = '';
       document.getElementById('alert-count').textContent = restockItems.length + ' item';
       document.getElementById('alert-chips').innerHTML = restockItems.map(r =>
         `<span class="alert-chip">
           <span class="chip-dot" style="background:${r.dot}"></span>
-          ${r.name}
-          <strong>(${r.stock})</strong>
+          ${r.name} <strong>(${r.stock})</strong>
         </span>`
       ).join('');
     }
 
-    // Panels per kategori
-    document.getElementById('panels-grid').innerHTML = data.categories.map(cat => {
-      const restockCount = cat.items.filter(i => i.stock < i.min).length;
-      const rows = cat.items.map(item => {
-        const needsRestock = item.stock < item.min;
-        return `<div class="stock-item"
-                     data-name="${(item.name + ' ' + item.code).toLowerCase()}"
-                     data-restock="${needsRestock ? '1' : '0'}">
-          <div class="stock-left">
-            <div class="stock-name">${item.name}</div>
-            <div class="stock-code">${item.code} · min ${item.min}</div>
-          </div>
-          <div class="stock-right">
-            <div class="stock-num">${item.stock}</div>
-          </div>
-        </div>`;
-      }).join('');
+    document.getElementById('panels-grid').innerHTML = data.categories
+      .filter(cat => cat.items.length > 0)
+      .map(cat => {
+        const warnCount = cat.items.filter(i => i.stock < i.min).length;
+        const rows = cat.items.map(item => {
+          const needsRestock = item.stock < item.min;
+          return `<div class="stock-item"
+                       data-name="${normalize(item.name + ' ' + item.code)}"
+                       data-restock="${needsRestock ? '1' : '0'}">
+            <div class="stock-left">
+              <div class="stock-name">${item.name}</div>
+              <div class="stock-code">${item.code} · min ${item.min}</div>
+            </div>
+            <div class="stock-right">
+              <div class="stock-num">${item.stock}</div>
+            </div>
+          </div>`;
+        }).join('');
 
-      return `<div class="panel" data-panel="${cat.key}">
-        <div class="panel-header">
-          <div class="panel-title">${cat.emoji} ${cat.label}</div>
-          ${restockCount > 0
-            ? `<span class="panel-badge badge-warn">⚠️ ${restockCount} restock</span>`
-            : `<span class="panel-badge badge-ok">${cat.items.length} item</span>`}
-        </div>
-        ${rows}
-      </div>`;
+        return `<div class="panel" data-panel="${cat.key}">
+          <div class="panel-header">
+            <div class="panel-title">${cat.emoji} ${cat.label}</div>
+            ${warnCount > 0
+              ? `<span class="panel-badge badge-warn">⚠️ ${warnCount} restock</span>`
+              : `<span class="panel-badge badge-ok">${cat.items.length} item</span>`}
+          </div>
+          ${rows}
+        </div>`;
     }).join('');
   }
-
-  // ── APPS SCRIPT URL ── ganti dengan URL deployment kamu
-  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyTcW__jLcDvE6ww3ZsLwbrgniKl-OXIqx-r5di3DemlTr63jdFP8RWmZWhAVYSpgN4/exec';
 
   document.addEventListener('DOMContentLoaded', () => {
     fixOffset();
